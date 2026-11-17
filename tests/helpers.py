@@ -3,9 +3,10 @@
 Si cambias los mensajes del programa, cambia aquí los textos que buscan las pruebas.
 """
 
-BIENVENIDA = "Bienvenido"
-INCORRECTO = "incorrecto"  # parte de "El nombre o la contraseña son incorrectos"
+WELCOME_TEXT = "Bienvenido"
+WRONG_LOGIN_TEXT = "incorrecto"  # parte de "El nombre o la contraseña son incorrectos"
+MENU_TITLE = "Menu"  # parte de "========== Menu =========="
 
 
-class EntradasAgotadas(Exception):
+class InputExhausted(Exception):
     """El programa pidió más datos con input() de los que la prueba preparó."""

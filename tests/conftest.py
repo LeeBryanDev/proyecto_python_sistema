@@ -1,4 +1,4 @@
-"""Ayudas compartidas por todas las pruebas (pytest las carga solo, sin import).
+"""Fixtures compartidas por todas las pruebas (pytest carga este archivo solo, sin import).
 
 Cada prueba trabaja en una carpeta temporal: tu usuarios.txt real nunca se toca.
 """
@@ -10,70 +10,71 @@ from pathlib import Path
 
 import pytest
 
-from ayudas import EntradasAgotadas
+from helpers import InputExhausted
 
-PROYECTO = Path(__file__).resolve().parent.parent
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+USERS_FILE = "usuarios.txt"
 
 
 @pytest.fixture
-def carpeta(tmp_path, monkeypatch):
+def workdir(tmp_path, monkeypatch):
     """Una carpeta temporal y vacía, que pasa a ser la carpeta actual de la prueba."""
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
 @pytest.fixture
-def usuarios(carpeta):
-    """usuarios("Lee,124\\nSan,412\\n") crea usuarios.txt con ese contenido exacto."""
+def users_file(workdir):
+    """users_file("Lee,124\\nSan,412\\n") crea usuarios.txt con ese contenido exacto."""
 
-    def crear(contenido: str) -> None:
-        (carpeta / "usuarios.txt").write_text(contenido, encoding="utf-8", newline="")
+    def write(content: str) -> None:
+        (workdir / USERS_FILE).write_text(content, encoding="utf-8", newline="")
 
-    return crear
+    return write
 
 
 @pytest.fixture
-def leer_usuarios(carpeta):
+def read_users(workdir):
     """Devuelve las líneas de usuarios.txt (lista vacía si el archivo no existe)."""
 
-    def leer() -> list[str]:
-        archivo = carpeta / "usuarios.txt"
-        return archivo.read_text(encoding="utf-8").splitlines() if archivo.exists() else []
+    def read() -> list[str]:
+        path = workdir / USERS_FILE
+        return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
 
-    return leer
+    return read
 
 
 @pytest.fixture
-def escribir(monkeypatch):
-    """escribir("ana", "1234") hace que cada input() devuelva esos textos, en orden.
+def typed_input(monkeypatch):
+    """typed_input("ana", "1234") hace que cada input() devuelva esos textos, en orden.
 
-    Si el programa pide más datos de los preparados, lanza EntradasAgotadas
+    Si el programa pide más datos de los preparados, lanza InputExhausted
     (por ejemplo, cuando vuelve a preguntar después de rechazar un dato).
     """
 
-    def preparar(*textos: str) -> None:
-        pendientes = iter(textos)
+    def prepare(*answers: str) -> None:
+        pending = iter(answers)
 
-        def input_falso(mensaje: str = "") -> str:
+        def fake_input(prompt: str = "") -> str:
             try:
-                return next(pendientes)
+                return next(pending)
             except StopIteration:
-                raise EntradasAgotadas(f"input() pidió otro dato: {mensaje!r}") from None
+                raise InputExhausted(f"input() pidió otro dato: {prompt!r}") from None
 
-        monkeypatch.setattr("builtins.input", input_falso)
+        monkeypatch.setattr("builtins.input", fake_input)
 
-    return preparar
+    return prepare
 
 
 @pytest.fixture
-def ejecutar(carpeta):
-    """Corre `python main.py` como lo haría una persona y le escribe `teclado` en la consola."""
+def run_app(workdir):
+    """Corre `python main.py` como lo haría una persona y le escribe `keyboard` en la consola."""
 
-    def correr(teclado: str) -> subprocess.CompletedProcess[str]:
+    def run(keyboard: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            [sys.executable, str(PROYECTO / "main.py")],
-            input=teclado,
-            cwd=carpeta,
+            [sys.executable, str(PROJECT_DIR / "main.py")],
+            input=keyboard,
+            cwd=workdir,
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -82,4 +83,4 @@ def ejecutar(carpeta):
             env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
 
-    return correr
+    return run

@@ -1,39 +1,39 @@
 """Pruebas del programa completo: se corre main.py y se le escribe en la consola, como una persona."""
 
-from ayudas import BIENVENIDA
+from helpers import MENU_TITLE, WELCOME_TEXT
 
 
-def test_la_opcion_3_cierra_el_programa(ejecutar):
-    resultado = ejecutar("3\n")
+def test_option_3_exits_the_program(run_app):
+    result = run_app("3\n")
 
-    assert resultado.returncode == 0
-    assert "Saliendo" in resultado.stdout
-
-
-def test_registrarse_y_luego_iniciar_sesion(ejecutar):
-    resultado = ejecutar("1\nana\n1234\n2\nana\n1234\n3\n")
-
-    assert resultado.returncode == 0
-    assert BIENVENIDA in resultado.stdout
+    assert result.returncode == 0
+    assert "Saliendo" in result.stdout
 
 
-def test_una_opcion_que_no_existe_vuelve_al_menu(ejecutar):
-    resultado = ejecutar("7\n3\n")
+def test_register_and_then_log_in(run_app):
+    result = run_app("1\nana\n1234\n2\nana\n1234\n3\n")
 
-    assert resultado.returncode == 0
-    assert resultado.stdout.count("Menu") == 2
-
-
-def test_una_letra_en_el_menu_no_cierra_el_programa(ejecutar):
-    resultado = ejecutar("a\n3\n")
-
-    assert "Traceback" not in resultado.stderr
-    assert resultado.returncode == 0
-    assert resultado.stdout.count("Menu") == 2
+    assert result.returncode == 0
+    assert WELCOME_TEXT in result.stdout
 
 
-def test_iniciar_sesion_sin_usuarios_registrados_no_cierra_el_programa(ejecutar):
-    resultado = ejecutar("2\nana\n1234\n3\n")
+def test_an_unknown_option_shows_the_menu_again(run_app):
+    result = run_app("7\n3\n")
 
-    assert "Traceback" not in resultado.stderr
-    assert resultado.returncode == 0
+    assert result.returncode == 0
+    assert result.stdout.count(MENU_TITLE) == 2
+
+
+def test_a_letter_in_the_menu_does_not_crash(run_app):
+    result = run_app("a\n3\n")
+
+    assert "Traceback" not in result.stderr
+    assert result.returncode == 0
+    assert result.stdout.count(MENU_TITLE) == 2
+
+
+def test_logging_in_with_no_registered_users_does_not_crash(run_app):
+    result = run_app("2\nana\n1234\n3\n")
+
+    assert "Traceback" not in result.stderr
+    assert result.returncode == 0
