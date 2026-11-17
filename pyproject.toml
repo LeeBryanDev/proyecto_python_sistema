@@ -1,0 +1,4 @@
+# Configuración de pytest (necesita pytest 9 o superior: ver requirements-dev.txt).
+[tool.pytest]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
