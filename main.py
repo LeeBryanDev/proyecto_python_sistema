@@ -53,4 +53,5 @@ def main():
 
 
 
-main() # Fin del mejor
+if __name__ == "__main__":
+    main() # Fin del mejor
